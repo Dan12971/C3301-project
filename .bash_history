@@ -1,203 +1,3 @@
-cd data
-cd local
-cd nhsystem
-chroot kali-armhf /bin/sh -i
-chroot kali-armhf /bin/bash  -i
-su
-cd
-cd llama.cpp
-cd models
-~/llama.cpp/llama-cli -m qwen.gguf -cnv -p "you are my assistant" --repeat-penalty 1.15 --repeat-last-n 128 -co -t 0
-getprop
-adb
-adb devices
-sudo adb devices
-sudo adb revoot bootloader
-sudo adb reboot bootloader
-sudo adb root
-adb sideload
-cd downloads
-ls
-adb sideload oops.sh
-adb kill-server7
-sudo adb sideload oops.sh
-adb 7
-adb reconnect offline
-sudo adb devices
-sudo adb reconnect offlie
-sudo adb reconnect offline
-sudo adb root
-sudo adb reconnect offlinep
-sudo adb reconnect offline
-sudo adb root
-sudo adb devices
-sudo adb reconnect offline
-sudo adb root
-sudo adb reconnect offline
-sudo adb sideload oops.sh
-cd llama.cpp
-cd models
-s
-ls
-~/llama.cpp/llama-cli -m ggml-vocab-command-r.gguf  -cnv -p "you are my assistant" --repeat-penalty 1.15 --repeat-last-n 128 -co -t 0
-cd ..
-ls
-cd docs
-ls
-cd ..
-cd examples
-ls
-cd llava
-ls
-cd android
-ls
-./adb_run.sh
-build_64.sh
-./build_64.sh
-cd ..
-ls
-cd ..
-ls
-cd gritlm
-ls
-cat README.md 
-cd  ..
-ls
-cd llava
-ls
-cat README
-ls
-cat README.nd
-cat README.md
-cd ..
-ls
-./Miku.sh
-cd ..
-.,/
-./Miku.sh
-~./llama.cpp/examples/Miku.sh
-cd examoles 
-cd examples 
-cmske --help
-cmake --help
-cmake -b Build
-cmake -B build
-cmake 
-cmake make
-cd ..
-cat README.md 
-cd docs
-cat Build.md
-ls
-cat build.md
-ls
-cd ..
-cd examoles 
-cd examples 
-cmake --build build --config Release
-cmake --build build 
-cd build
-ls
-make
-cmake -B 
-cd ..
-cmake -B build
-cmake --build
-cd ..
-cd models
-~/llama.cpp/llama-cli -m qwen.gguf -cnv -p "you are my assistant" --repeat-penalty 1.15 --repeat-last-n 128 -co -t 0
-~/llama.cpp/llama-cli -m td.gguf -cnv -p "you are my assistant" --repeat-penalty 1.15 --repeat-last-n 128 -co -t 0
-nano new3.py
-python3 new3.py
-nano new3.py
-python3 new3.py
-nano new3.py
-python3 new3.py
-~/llama.cpp/llama-cli -m td.gguf -cnv -p "you are my assistant" --repeat-penalty 1.15 --repeat-last-n 128 -co -t 0
-~/llama.cpp/llama-cli -m qwen.gguf -cnv -p "you are my assistant" --repeat-penalty 1.15 --repeat-last-n 128 -co -t 0
-nano  p4.py
-cd ..
-ls
-./run.elf
-run.elf
-sh run.elf
-cat run.elf
-nano run.elf
-sh run.elf
-busybox
-toybox
-su
-cd /
-cd odm
-cd bin
-./engineer_vendor_shell.sh 
-su
-sudo nano buikd.prop
-sudo nano build.prop
-nano buikd.prop
-nano build.prop
-sudo nano build.prop
-cd
-cd llama.cpp/
-cd models
-~/llama.cpp/llama-cli -m qwen.gguf -cnv -p "you are my assistant" --repeat-penalty 1.15 --repeat-last-n 128 -co -t 0
-cd llama
-cd llama.cpp/
-cd models
-ls
-python3 p4.py
-python3 new3.py
-python3 new.py
-python3 new2.py
-adb pair 192.168.1.205:40749
-adb connect 192.168.1.205:40647
-adb shell
-adb reboot bootlao
-adb devices
-adb reboot bootloader
-adb devices
-adb reboot bootloader
-adb connect 192.168.1.205
-adb connect 192.168.1.241:34823
-adb reboot bootloader
-adb devices 
-adb devices -l
-adb -t 2 reboot bootloader
-~/llama.cpp/llama-cli -m qwen.gguf -cnv -p "you are my assistant" --repeat-penalty 1.15 --repeat-last-n 128 -co -t 8 
-~/llama.cpp/llama-cli -m tdgguf -cnv -p "you are my assistant" --repeat-penalty 1.15 --repeat-last-n 128 -co -t 8 
-~/llama.cpp/llama-cli -m td.gguf -cnv -p "you are my assistant" --repeat-penalty 1.15 --repeat-last-n 128 -co -t 8 
-adb connect 192.168.1.189:42105
-adb connect 192.168.1.189:446451
-adb connect 192.168.1.189:46451
-adb pair  192.168.1.189:46451
-adb pair  192.168.1.189:42261
-adb pair  192.168.1.37927
-adb connect 192.168.1.18934457
-adb connect 192.168.1.189:34457
-adb shell
-adb connect 192.168.1.189:37557
-adb pair  192.168.1.38517
-adb connect 192.168.1.189:37557
-adb shell
-adb connect 192.168.1.189:37557
-adb connect 192.168.1.189:36917
-adb shell
-adb connect 192.168.1.189:36917
-adb connect 192.168.1.189:45526
-adb connect 192.168.1.189:45527
-cd /
-cd sdcard
-cd downloads
-cd download
-ls
-adb sideload magisk.apk
-adb devices
-adb insiall magisk.apk
-adb
-adb shell install -g magisk.apk
-adb shell install --help
-adb shell install magisk.apk -d
-adb shelk mount -w
 adb shell mount -w
 adb shell install magisk.apk -d
 adb shell install magisk.apk 
@@ -498,3 +298,203 @@ pkg install wireless tools
 pkg install wireless-tools
 iwconfig
 FLASK_RUN_PORT=5001 flask run
+ls
+nano app
+nano app.py
+nano c3301_blockchain.py 
+nano c3301_blockchain.py 0
+nano c3301_blockchain.py 
+[A
+nano c3301_blockchain.py 
+rm c3301_blockchain.py 
+nano c3301_blockchain.py
+cd templates
+ls
+nano index.html 
+rm index.html 
+nano index.html
+cd ..
+cd static
+ls
+nano
+rm apl
+rm app.js
+nano app.js
+cd ..
+cd static
+nano style.jss
+ls
+nano style.css
+rm style.css
+nano style.css
+rm style.css
+nano style.css
+cd ..
+cd templates/
+rm index.html 
+nano index.html
+rm explorer.html 
+nano explorer.html
+cd ..
+pip freeze > requirements.txt
+pip install gunicorm
+pip install gunicorn
+pip freeze > requirements.txt
+nano .gitignore
+git init
+git add .
+sudo git add .
+sudo git commit -m "initial project commit"
+sudo git config --global --add safe.directory /data/data/com.termux/files/home
+sudo git commit -m "initial project commit"
+sudo
+sudo  git config --global user.email "tedlugen@gmail.com"
+sudo git config --global user.name "Dan12971"
+sudo git commit -m "initial project commit"
+sudo git add .
+sudo git commit -m "initial project commit"
+git remote add origin https://github.com/YOUR_USERNAME/c3301-project.git
+git 
+git remote add origin https://github.com/dan12971/c3301-project.git
+git push -u origin main
+ls
+git push 
+git push --set-upstream origin master                           
+git push --set-upstream https://www.github.com/dan12971/C3301-project.git  master                           
+git init -b maim
+git remote add origin https://github.com/Dan12971/C3301-project
+git remote -v
+git
+git help
+git reset
+sudo git reset
+git remote -v
+git remote --help
+git remote remove origin https://github.com/Dan12971/C3301-project
+git remote remove origin https://github.com/Dan12971/C3301-project.git
+git remote remove https://github.com/Dan12971/C3301-project.git
+git remote remove https://github.com/YOUR_USERNAME/C3301-project.git
+git remote remove --push https://github.com/YOUR_USERNAME/C3301-project.git
+git remote --help
+git remote --set-url https://github.com/YOUR_USERNAME/C3301-project.git
+git remote set-url --delete  https://github.com/YOUR_USERNAME/C3301-project.git
+git remote set-url --delete origin  https://github.com/YOUR_USERNAME/C3301-project.git
+sudo git remote set-url --delete origin  https://github.com/YOUR_USERNAME/C3301-project.git
+git remote remove origin
+git remote origin -v
+git remote -v
+git remote add origin https://github.com/Dan12971/C3301-project
+git push origin main
+sudo git push origin main
+sudo git push origin .
+sudo git push origin 
+sudo git push origin master
+git remote -v
+sudo git push -u origin main
+git remote remove origin
+git remote add origin https://github.com/Dan12971/C3301-project.git
+sudo git push -u origin main
+git branch
+git branch -m master main
+sudo git branch -m master main
+sudo git push -u origin main
+su
+sudo git push -u origin main
+sudo git push -u origin main --header "Authorization: Bearer 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" \
+sudo git push -u origin main --header "Authorization: Bearer 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" 
+git push help
+sudo git push help
+sudo git push --help
+sudo git push -u origin main --no-verify
+sudo git push --help
+sudo git push -u origin main --force
+git push -u origin main --no-verify
+sudo git push -a
+sudo git push all
+sudo git push -u all
+sudo git push -u --all
+sudo git push -u origin main
+sudo git push origin main
+sudo git push main
+sudo git push https://github.com/Dan12971/C3301-project.git/
+apt update git
+apt update
+apt upgrade6
+apt upgrade
+sudo git push origin main
+git remote remove origin
+sudo git remote remove origin
+git remote add origin http://github.com/Dan12971/C3301-project.git
+sudo git remote add origin http://github.com/Dan12971/C3301-project.git
+sudo git push -u origin main
+sudo git remote remove origin
+sudo git remote add origin www.github.com/Dan12971/C3301-project.git
+sudo git push -u origin main
+sudo git remote add origin github.com/Dan12971/C3301-project.git
+sudo git remote remove origin
+sudo git remote add origin github.com/Dan12971/C3301-project.git
+sudo git push -u origin main
+sudo git remote remove origin
+sudo git push -u origin main
+git remote add origin https://github.com/Dan12971/C3301-project.git
+sudo git remote add origin https://github.com/Dan12971/C3301-project.git
+cd downloads
+ls
+termux-setup-storagr
+termux-setup-storage
+ls
+sudo git push -u origin main
+git-credential-manager-core configure.
+git-credential-manager configure.
+git push
+sudo git push
+cd 
+sudo git push
+git push --set-upstream origin main
+sudo git push --set-upstream origin main
+sudo git push
+git help config
+sudo git help config
+git config --global credential.
+sudo git config --global credential.
+sudo git config --global credential.helper 
+ls
+sudo git config --global credential.helper store
+sudo git pull
+git pull main
+sudogit pull main
+sudo git pull main
+sudo git pull origin
+sudo git pull origin main
+sudo git pull origin main --release
+sudo git pull origin main --all
+sudo git pull origin main 
+sudo git config --global
+sudo git config --global 
+sudo git pull
+sudo git pull -u
+sudo git pull --all
+git branch --set-upstream-to=origin/<branch> main                         
+sudk git branch --set-upstream-to=origin/<branch> main                         
+sudo git branch --set-upstream-to=origin/<branch> main                         
+sudo git branch --set-upstream-to=origin  main                         
+sudo git bran --set-upstream-to=origin  main                         
+sudo git push
+ls
+flask run
+flask run 192.168.9.99:5000
+flask run 
+run flask
+flask rum
+flask run
+ip link
+iwconfig
+ip
+nano solver.py
+python3 solver.py
+nano solver.py
+python3 solver.py
+nano solver.py
+python3 solver.py
+nano solver.py
+python3 solver.py

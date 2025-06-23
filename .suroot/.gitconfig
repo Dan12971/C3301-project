@@ -3,3 +3,5 @@
 [user]
 	email = tedlugen@gmail.com
 	name = Dan12971
+[credential]
+	helper = manager
