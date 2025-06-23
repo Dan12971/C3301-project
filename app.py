@@ -1,5 +1,5 @@
-from flask import Flask, jsonify, request, render_template
-from ecdsa import SigningKey, NIST384p
+from flask import Flask,jsonify,request,render_template
+from ecdsa import SigningKey,NIST384p
 from c3301_blockchain import Blockchain, Wallet, Transaction
 from argparse import ArgumentParser
 
