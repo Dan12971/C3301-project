@@ -1,0 +1,41 @@
+--- adb starting (pid 10726) ---
+02-20 06:18:10.620 10726 10726 I adb     : main.cpp:63 Android Debug Bridge version 1.0.41
+02-20 06:18:10.620 10726 10726 I adb     : main.cpp:63 Version 35.0.2-android-tools
+02-20 06:18:10.620 10726 10726 I adb     : main.cpp:63 Installed as /data/data/com.termux/files/usr/bin/adb
+02-20 06:18:10.620 10726 10726 I adb     : main.cpp:63 Running on Linux 5.4.210-qgki-g75440a563b0b (aarch64)
+02-20 06:18:10.620 10726 10726 I adb     : main.cpp:63 
+02-20 06:18:10.622 10726 10726 I adb     : auth.cpp:416 adb_auth_init...
+02-20 06:18:10.622 10726 10726 I adb     : auth.cpp:220 User key '/data/data/com.termux/files/home/.suroot/.android/adbkey' does not exist...
+02-20 06:18:10.622 10726 10726 I adb     : auth.cpp:64 generate_key(/data/data/com.termux/files/home/.suroot/.android/adbkey)...
+02-20 06:18:10.804 10726 10726 I adb     : auth.cpp:152 loaded new key from '/data/data/com.termux/files/home/.suroot/.android/adbkey' with fingerprint 66AE662977E46356ADF590FE3B155EB0A5F4FDBBD482A13EB6AE0D6233FAD3C0
+02-20 06:18:10.804 10726 10726 I adb     : auth.cpp:391 adb_auth_inotify_init...
+02-20 06:18:10.812 10726 10726 I adb     : transport.cpp:1710 fetching keys for transport 1080339022328472
+02-20 06:18:10.812 10726 10726 I adb     : auth.cpp:468 Calling send_auth_response
+02-20 06:18:10.816 10726 10726 I adb     : auth.cpp:435 Calling send_auth_publickey
+adb server killed by remote request
+02-20 06:19:51.788 10726 10726 I adb     : transport.cpp:1060 kicking transport 0xb4000077a3a12200 1080339022328472
+02-20 06:19:51.788 10726 10726 I adb     : transport.cpp:1153 1080339022328472: connection terminated: requested stop
+--- adb starting (pid 11261) ---
+02-20 06:20:21.895 11261 11261 I adb     : main.cpp:63 Android Debug Bridge version 1.0.41
+02-20 06:20:21.895 11261 11261 I adb     : main.cpp:63 Version 35.0.2-android-tools
+02-20 06:20:21.895 11261 11261 I adb     : main.cpp:63 Installed as /data/data/com.termux/files/usr/bin/adb
+02-20 06:20:21.895 11261 11261 I adb     : main.cpp:63 Running on Linux 5.4.210-qgki-g75440a563b0b (aarch64)
+02-20 06:20:21.895 11261 11261 I adb     : main.cpp:63 
+02-20 06:20:21.896 11261 11261 I adb     : auth.cpp:416 adb_auth_init...
+02-20 06:20:21.896 11261 11261 I adb     : auth.cpp:152 loaded new key from '/data/data/com.termux/files/home/.suroot/.android/adbkey' with fingerprint 66AE662977E46356ADF590FE3B155EB0A5F4FDBBD482A13EB6AE0D6233FAD3C0
+02-20 06:20:21.896 11261 11261 I adb     : auth.cpp:391 adb_auth_inotify_init...
+02-20 06:20:21.904 11261 11261 I adb     : transport.cpp:1710 fetching keys for transport 1080339022328472
+02-20 06:20:21.904 11261 11261 I adb     : auth.cpp:468 Calling send_auth_response
+02-20 06:20:21.907 11261 11261 I adb     : auth.cpp:435 Calling send_auth_publickey
+02-20 06:20:59.983 11261 11261 I adb     : transport.cpp:1053 resetting transport 0xb400007d18c12200 1080339022328472
+02-20 06:21:00.521 11261 11261 W adb     : usb_libusb.cpp:664 libusb_cancel_transfer failed: LIBUSB_ERROR_NOT_FOUND
+02-20 06:21:00.521 11261 11264 F adb     : usb_libusb.cpp:159 Check failed: read_block->transfer 
+--- adb starting (pid 11648) ---
+02-20 06:21:52.607 11648 11648 I adb     : main.cpp:63 Android Debug Bridge version 1.0.41
+02-20 06:21:52.607 11648 11648 I adb     : main.cpp:63 Version 35.0.2-android-tools
+02-20 06:21:52.607 11648 11648 I adb     : main.cpp:63 Installed as /data/data/com.termux/files/usr/bin/adb
+02-20 06:21:52.607 11648 11648 I adb     : main.cpp:63 Running on Linux 5.4.210-qgki-g75440a563b0b (aarch64)
+02-20 06:21:52.607 11648 11648 I adb     : main.cpp:63 
+02-20 06:21:52.608 11648 11648 I adb     : auth.cpp:416 adb_auth_init...
+02-20 06:21:52.608 11648 11648 I adb     : auth.cpp:152 loaded new key from '/data/data/com.termux/files/home/.suroot/.android/adbkey' with fingerprint 66AE662977E46356ADF590FE3B155EB0A5F4FDBBD482A13EB6AE0D6233FAD3C0
+02-20 06:21:52.608 11648 11648 I adb     : auth.cpp:391 adb_auth_inotify_init...

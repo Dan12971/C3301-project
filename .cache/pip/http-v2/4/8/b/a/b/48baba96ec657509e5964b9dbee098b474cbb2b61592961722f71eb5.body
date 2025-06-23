@@ -1,0 +1,52 @@
+Metadata-Version: 2.1
+Name: pyvenv
+Version: 0.2.2
+Summary: A minimalist python environment manager.
+Home-page: https://github.com/Ashrit-Yarava/pyvenv
+License: MIT
+Keywords: pyvenv,environment,venv,pyenv,env
+Author: Ashrit Yarava
+Author-email: ashdragon95@gmail.com
+Requires-Python: >=3.6,<4.0
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Requires-Dist: clipboard (>=0.0.4,<0.0.5)
+Requires-Dist: termcolor (>=1.1.0,<2.0.0)
+Description-Content-Type: text/markdown
+
+# PyVenv
+---
+> A minimalist python environment manager.
+```
+ ____      __     __              
+|  _ \ _   \ \   / /__ _ ____   __
+| |_) | | | \ \ / / _ \ '_ \ \ / /
+|  __/| |_| |\ V /  __/ | | \ V / 
+|_|    \__, | \_/ \___|_| |_|\_/  
+       |___/                      
+
+help: {program_name} <command> [arguments]
+
+Global Options:
+    -h, --help               Show this help message and exit.
+    
+Commands:
+    
+    create                   Create a new environment.
+        Options: {program_name} create <environment name>
+
+    remove                   Delete an environment.
+        Options: {program_name} remove <environment name>
+
+    shell                    Activate an environment (Copy activation command).
+        Options: {program_name} activate <environment name>
+
+    list                     List the available environments.
+        Options: {program_name} list
+
+
+```
+

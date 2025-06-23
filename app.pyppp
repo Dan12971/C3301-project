@@ -1,0 +1,206 @@
+kdjdfrom flask import Flask, jsonify, request,render_template
+from c3301_blockchain import Blockchain, Wallet, Transaction
+
+# Create the Flask web app
+app = Flask(__name__)
+
+# Initialize our C3301 blockchain
+blockchain = Blockchain()
+
+
+# In app.py at the top of the routes
+@app.route('/explorer')
+def explorer_ui():
+    """Serves the block explorer web page."""
+    return render_template('explorer.html')
+
+
+# In app.py
+
+# ... (keep all the existing endpoints) ...
+
+# Add these two new endpoints
+@app.route('/block/<int:block_index>', methods=['GET'])
+def get_block(block_index):
+    """
+    Returns the details of a specific block.
+    """
+    if block_index < 0 or block_index >= len(blockchain.chain):
+        return "Error: Block not found", 404
+    
+    block = blockchain.chain[block_index]
+    return jsonify(block), 200
+
+
+@app.route('/address/<address>', methods=['GET'])
+def get_address_info(address):
+    """
+    Returns the balance and transaction history for a specific address.
+    """
+    address_data = blockchain.get_address_data(address)
+    return jsonify(address_data), 200
+
+
+
+
+@app.route('/')
+def index():
+    """Serves the frontend web page."""
+    return render_template('index.html')
+
+
+@app.route('/nodes/register', methods=['POST'])
+def register_nodes():
+    """
+    Accepts a list of new nodes to join the network.
+    Required POST data (JSON):
+    {
+        "nodes": ["http://127.0.0.1:5001", "http://127.0.0.1:5002"]
+    }
+    """
+    values = request.get_json()
+    nodes = values.get('nodes')
+
+    if nodes is None:
+        return "Error: Please supply a valid list of nodes", 400
+
+    for node in nodes:
+        blockchain.register_node(node)
+
+    response = {
+        'message': 'New nodes have been added',
+        'total_nodes': list(blockchain.nodes),
+    }
+    return jsonify(response), 201
+
+
+@app.route('/nodes/resolve', methods=['GET'])
+def consensus():
+    """
+    Run the consensus algorithm to resolve conflicts.
+    """
+    replaced = blockchain.resolve_conflicts()
+
+    if replaced:
+        response = {
+            'message': 'Our chain was replaced',
+            'new_chain': [block for block in blockchain.chain]
+        }
+    else:
+        response = {
+            'message': 'Our chain is authoritative',
+            'chain': [block for block in blockchain.chain]
+        }
+    return jsonify(response), 200
+
+
+
+
+
+@app.route('/wallet', methods=['GET'])
+def get_wallet():
+    """
+    Generates a new wallet and returns its details.
+    NOTE: In a real application, you would NEVER expose the private key like this.
+    This is for demonstration purposes only.
+    """
+    wallet = Wallet()
+    response = {
+        'message': 'New wallet created.',
+        'public_address': wallet.address,
+        'private_key': wallet.private_key.to_string().hex() # For demonstration
+    }
+    return jsonify(response), 200
+
+@app.route('/chain', methods=['GET'])
+def get_chain():
+    """
+    Returns the full blockchain.
+    """
+    response = {
+        'chain': [block.__dict__ for block in blockchain.chain],
+        'length': len(blockchain.chain),
+    }
+    return jsonify(response), 200
+
+@app.route('/transactions/new', methods=['POST'])
+def new_transaction():
+    """
+    Accepts a new transaction and adds it to the pending pool.
+    Required POST data (JSON):
+    {
+        "sender": "sender_public_address",
+        "recipient": "recipient_public_address",
+        "amount": 0.5,
+        "signature": "transaction_signature"
+    }
+    """
+    values = request.get_json()
+
+    # Check that the required fields are in the POST'ed data
+    required = ['sender', 'recipient', 'amount', 'signature']
+    if not all(k in values for k in required):
+        return 'Missing values', 400
+
+    # Create a new Transaction object
+    tx = Transaction(values['sender'], values['recipient'], values['amount'])
+    tx.set_signature(values['signature'])
+    
+    # Add the transaction to the blockchain
+    success = blockchain.add_transaction(tx)
+
+    if success:
+        response = {'message': 'Transaction will be added to the next Block.'}
+        return jsonify(response), 201
+    else:
+        response = {'message': 'Invalid transaction.'}
+        return jsonify(response), 400
+
+
+@app.route('/mint', methods=['POST'])
+def mint_coin():
+    """
+    Attempts to mint a new coin by solving the puzzle.
+    Required POST data (JSON):
+    {
+     "solver_address": "your_public_address",
+     "secret_phrase": "the solution you discovered"
+    }
+    """
+    values = request.get_json()
+
+    required = ['solver_address', 'secret_phrase']
+    if not all(k in values for k in required):
+        return 'Missing values', 400
+
+    solver_address = values['solver_address']
+    secret_phrase = values['secret_phrase']
+
+    # We need a dummy wallet object to pass to the minting function for its address
+    # In a real app, this might be handled differently, but it works for our prototype
+    class SolverWallet:
+        address = solver_address
+    
+    new_block = blockchain.attempt_mint(SolverWallet, secret_phrase)
+
+    if new_block:
+        response = {
+            'message': 'New Block Forged!',
+            'block_index': new_block.index,
+            'transactions': [tx for tx in new_block.transactions],
+            'data_clue': new_block.data
+        }
+        return jsonify(response), 200
+    else:
+        response = {'message': 'Minting failed. Invalid solution or already solved.'}
+        return jsonify(response), 400
+
+
+if __name__ == '__main__':
+    # Runs the app on http://127.0.0.1:5000
+    app.run(host='0.0.0.0', port=5000)
+
+# In app.py
+
+# ... (all existing endpoints) ...
+

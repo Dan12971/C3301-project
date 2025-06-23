@@ -1,0 +1,9 @@
+# Python
+__pycache__/
+*.pyc
+.env
+venv/
+env/
+
+# Our Data File
+blockchain_data.json
