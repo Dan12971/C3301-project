@@ -236,3 +236,73 @@ small {
     color: var(--secondary-text);
     font-size: 0.9rem;
 }
+
+/* --- Styles for Puzzle Simulator --- */
+#puzzle-simulator {
+    text-align: center;
+    background-color: var(--background-color); /* Make it stand out */
+}
+
+.sim-puzzle-area {
+    background: #16161e;
+    padding: 1.5rem;
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+}
+
+#sim-puzzle-text {
+    font-size: 1.1rem;
+    color: var(--primary-text);
+    margin: 0;
+}
+
+#sim-puzzle-clue {
+    font-style: italic;
+    color: var(--secondary-text);
+    margin-top: 0.5rem;
+    display: block;
+}
+
+.sim-input-area {
+    display: flex;
+    gap: 1rem;
+}
+
+.sim-input-area input {
+    flex-grow: 1;
+    margin-bottom: 0;
+}
+
+.sim-input-area button {
+    margin-top: 0;
+}
+
+.sim-result {
+    margin-top: 1rem;
+    min-height: 24px;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.sim-result.correct {
+    color: var(--success-color);
+}
+
+.sim-result.incorrect {
+    color: var(--error-color);
+}
+
+#sim-refresh-btn {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    background-color: transparent;
+    color: var(--secondary-text);
+    border: 1px solid var(--secondary-text);
+}
+
+#sim-refresh-btn:hover {
+    background-color: var(--secondary-text);
+    color: var(--background-color);
+}
