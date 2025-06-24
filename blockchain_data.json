@@ -1,0 +1,36 @@
+[
+    {
+        "index": 0,
+        "transactions": [],
+        "timestamp": 1750693728.9382164,
+        "previous_hash": "0",
+        "data": {
+            "puzzle": "Decrypt the following text: 'HUVUFTVBZ100'",
+            "clue": "Caesar cipher, shift key = 7",
+            "solution_hash": "bb34126fab8323562ca58a05a1896f349e55aa245d7be74d18bf2e0c345cbcf6"
+        },
+        "nonce": 0,
+        "hash": "e7ec1fef0a29587dbbbf0d935f4da2c8faa2d6a73bb2964d13ebc1952494034e"
+    },
+    {
+        "index": 1,
+        "transactions": [
+            {
+                "sender": "MINT_REWARD",
+                "recipient": "642e4d678d4d8c2f799143930229c4ab4448e3026b51c6893c4d842c7c1eb41a1a598f4276e3d5dc1c5ac2a82d1f925e323acdfafc911bc813989b4aa55ca3281b031bcaa039354f055568cedf407951c278a6f2885f3a731ee9662ac0abadc3",
+                "amount": 1,
+                "timestamp": 1750707208.906141,
+                "signature": null
+            }
+        ],
+        "timestamp": 1750707208.9062228,
+        "previous_hash": "e7ec1fef0a29587dbbbf0d935f4da2c8faa2d6a73bb2964d13ebc1952494034e",
+        "data": {
+            "puzzle": "Decrypt the following text: 'MZXZCRETV674'",
+            "clue": "Caesar cipher, shift key = 17",
+            "solution_hash": "1e4bdc9f2677db9e73add82d644848295d34a59c3a87e61d19e6e54b88addf54"
+        },
+        "nonce": 0,
+        "hash": "16c769d4e13b88a27b94fb673cf8ef4c12ed9aa2920be891a31bf1ff5578f620"
+    }
+]
