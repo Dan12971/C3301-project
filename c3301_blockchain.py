@@ -9,32 +9,28 @@ from ecdsa import SigningKey, VerifyingKey, NIST384p
 class PuzzleMaster:
     """
     The Amnesiac Oracle for generating and managing puzzles.
-    It creates a puzzle and a hash of the solution, then "forgets" the solution.
+    It randomly selects from multiple puzzle types.
     """
     def __init__(self):
+        # A simple word list to generate our puzzle text from
         self.word_list = [
             "ETERNAL", "VIGILANCE", "CIPHER", "ORACLE", "SECRET", "ALGORITHM",
             "DISCOVERY", "GENESIS", "PROTOCOL", "ANONYMOUS", "CICADA", "PRIME"
         ]
 
-    def _generate_caesar_cipher(self, text, shift):
-        encrypted_text = ""
-        for char in text:
-            if 'A' <= char <= 'Z':
-                shifted = ord(char) + shift
-                if shifted > ord('Z'):
-                    shifted -= 26
-                encrypted_text += chr(shifted)
-            else:
-                encrypted_text += char
-        return encrypted_text
-
     def _create_caesar_cipher_puzzle(self):
         """Generates a puzzle package for a Caesar cipher challenge."""
-        solution = random.choice(self.word_list)
-        solution = f"{solution}{random.randint(100, 999)}"
+        solution = random.choice(self.word_list) + str(random.randint(100, 999))
         shift_key = random.randint(3, 24)
-        encrypted_text = self._generate_caesar_cipher(solution, shift_key)
+        
+        encrypted_text = ""
+        for char in solution:
+            if 'A' <= char <= 'Z':
+                shifted = ord(char) + shift_key
+                if shifted > ord('Z'): shifted -= 26
+                encrypted_text += chr(shifted)
+            else: encrypted_text += char
+        
         puzzle = f"Decrypt the following text: '{encrypted_text}'"
         clue = f"Caesar cipher, shift key = {shift_key}"
         solution_hash = hashlib.sha256(solution.encode()).hexdigest()
@@ -42,11 +38,12 @@ class PuzzleMaster:
 
     def _create_anagram_puzzle(self):
         """Generates a puzzle package for an anagram challenge."""
-        solution = random.choice(self.word_list)
-        solution = f"{solution}{random.randint(100, 999)}"
+        solution = random.choice(self.word_list) + str(random.randint(100, 999))
+        
         l = list(solution)
         random.shuffle(l)
         scrambled_word = "".join(l)
+
         puzzle = f"Unscramble the following letters to find the secret phrase: '{scrambled_word}'"
         clue = "The solution is a single word followed by a three-digit number."
         solution_hash = hashlib.sha256(solution.encode()).hexdigest()
@@ -54,19 +51,18 @@ class PuzzleMaster:
 
     def _create_vigenere_puzzle(self):
         """Generates a puzzle package for a Vigenère cipher challenge."""
-        solution = random.choice(self.word_list)
-        solution = f"{solution}{random.randint(100, 999)}"
+        solution = random.choice(self.word_list) + str(random.randint(100, 999))
         keyword = random.choice(self.word_list)
+        
         encrypted_text = ""
         for i, char in enumerate(solution):
             if 'A' <= char <= 'Z':
                 shift = ord(keyword[i % len(keyword)]) - ord('A')
                 shifted = ord(char) + shift
-                if shifted > ord('Z'):
-                    shifted -= 26
+                if shifted > ord('Z'): shifted -= 26
                 encrypted_text += chr(shifted)
-            else:
-                encrypted_text += char
+            else: encrypted_text += char
+
         puzzle = f"Decrypt the following text using the provided keyword: '{encrypted_text}'"
         clue = f"Vigenère cipher, keyword = '{keyword}'"
         solution_hash = hashlib.sha256(solution.encode()).hexdigest()
@@ -223,3 +219,4 @@ class Blockchain:
             self.save_chain_to_disk()
             return True
         return False
+        
