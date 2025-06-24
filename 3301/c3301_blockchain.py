@@ -3,29 +3,35 @@ import time
 import json
 import requests
 import os
-# The 'random' library is no longer needed and has been removed.
 from ecdsa import SigningKey, VerifyingKey, NIST384p
 
 class PuzzleMaster:
     """
-    The Amnesiac Oracle that deterministically generates puzzles from a seed.
-    This implementation is trustless and provably fair.
+    The Amnesiac Oracle. It algorithmically generates trustless puzzles
+    and solutions directly from a seed, without any predefined word lists.
     """
-    def __init__(self):
-        self.word_list = [
-            "ETERNAL", "VIGILANCE", "CIPHER", "ORACLE", "SECRET", "ALGORITHM",
-            "DISCOVERY", "GENESIS", "PROTOCOL", "ANONYMOUS", "CICADA", "PRIME"
-        ]
+    def _generate_word_from_seed(self, seed_int, length=7):
+        """Generates a deterministic, random-looking word from a seed integer."""
+        word = ""
+        # Use a temporary variable to not alter the main seed_int for other operations
+        temp_seed = seed_int
+        for _ in range(length):
+            # Generate a character code from 0-25
+            char_code = temp_seed % 26
+            word += chr(char_code + ord('A')) # Convert to an uppercase letter
+            # Bit-shift the seed to use a different part for the next character
+            temp_seed = temp_seed >> 5
+        return word
 
     def _create_caesar_cipher_puzzle(self, seed):
-        seed_int = int(seed, 16) # Convert hex hash to a large integer
+        seed_int = int(seed, 16)
         
-        word_index = seed_int % len(self.word_list)
-        solution_word = self.word_list[word_index]
-        solution_number = (seed_int >> 8) % 1000 # Use different bits for different parts
+        # CHANGED: Word is now generated algorithmically
+        solution_word = self._generate_word_from_seed(seed_int)
+        solution_number = (seed_int >> 64) % 1000 # Use different bits
         solution = f"{solution_word}{solution_number}"
         
-        shift_key = (seed_int >> 16) % 22 + 3 # Shift between 3 and 24
+        shift_key = (seed_int >> 32) % 22 + 3
 
         encrypted_text = ""
         for char in solution:
@@ -42,14 +48,12 @@ class PuzzleMaster:
 
     def _create_vigenere_puzzle(self, seed):
         seed_int = int(seed, 16)
-        
-        word_index = seed_int % len(self.word_list)
-        solution_word = self.word_list[word_index]
-        solution_number = (seed_int >> 8) % 1000
-        solution = f"{solution_word}{solution_number}"
 
-        keyword_index = (seed_int >> 16) % len(self.word_list)
-        keyword = self.word_list[keyword_index]
+        # CHANGED: Both solution and keyword are generated from the seed
+        solution_word = self._generate_word_from_seed(seed_int, length=8)
+        keyword = self._generate_word_from_seed(seed_int >> 64, length=5) # Use different bits for the keyword
+        solution_number = (seed_int >> 128) % 1000
+        solution = f"{solution_word}{solution_number}"
         
         encrypted_text = ""
         for i, char in enumerate(solution):
@@ -68,20 +72,16 @@ class PuzzleMaster:
     def _create_hashing_challenge_puzzle(self, seed, difficulty_level):
         seed_int = int(seed, 16)
         num_zeros = 3 + (difficulty_level // 500)
-        # Use the seed to add a unique salt to the puzzle string
         salt = seed_int % 1000000
         puzzle_string = f"C3301-Block-{difficulty_level}-{salt}-"
-        puzzle = f"Find a number (a nonce) such that the SHA-256 hash of the string '{puzzle_string}{{nonce}}' starts with {num_zeros} leading zeros."
-        clue = "This requires a brute-force script to solve. The solution is the nonce itself."
+        puzzle = f"Find a number (nonce) such that the SHA-256 hash of '{puzzle_string}{{nonce}}' starts with {num_zeros} zeros."
+        clue = "This requires a brute-force script to solve. The solution is the nonce."
         return { "puzzle_type": "HashingChallenge", "puzzle": puzzle, "clue": clue, "puzzle_data": { "prefix": puzzle_string, "zeros": num_zeros } }
 
     def create_new_puzzle(self, difficulty_level, seed):
-        """Generates a puzzle deterministically based on the difficulty and seed."""
-        # CHANGED: The choice of puzzle is now also deterministic
         seed_int = int(seed, 16)
         
         if difficulty_level <= 1500:
-            # Alternate between Caesar and Vigenère based on the seed
             if seed_int % 2 == 0:
                 return self._create_caesar_cipher_puzzle(seed)
             else:
@@ -104,7 +104,6 @@ class Blockchain:
         self.chain = []; self.pending_transactions = []; self.nodes = set(); self.chain_file = "blockchain_data.json"; self.puzzle_master = PuzzleMaster(); self.transaction_fee = 0.001
         self.load_chain_from_disk()
 
-    # ... save_chain_to_disk and load_chain_from_disk remain the same ...
     def save_chain_to_disk(self):
         try:
             with open(self.chain_file, 'w') as f: json.dump(self.chain, f, indent=4)
@@ -119,8 +118,7 @@ class Blockchain:
 
     def create_genesis_block(self):
         print("Creating a new blockchain with a deterministic Genesis Block...")
-        # CHANGED: Using a hardcoded, public seed for the very first puzzle
-        genesis_seed = hashlib.sha256("The Hunt Begins 2025-06-23".encode()).hexdigest()
+        genesis_seed = hashlib.sha256("The Hunt Begins 2025-06-24".encode()).hexdigest()
         first_puzzle = self.puzzle_master.create_new_puzzle(difficulty_level=1, seed=genesis_seed)
         genesis_block = Block(index=0, transactions=[], timestamp=time.time(), previous_hash="0", data=first_puzzle)
         self.chain = [genesis_block.__dict__]
@@ -131,15 +129,15 @@ class Blockchain:
     def add_transaction(self, transaction): self.pending_transactions.append(transaction); return True
 
     def attempt_mint(self, solver_wallet, proposed_solution):
-        """UPDATED: Verifies solutions and uses the previous block hash to seed the next puzzle."""
-        # ... Verification logic remains the same ...
         latest_block_data = self.latest_block['data']
         puzzle_type = latest_block_data.get('puzzle_type')
         is_solution_correct = False
+
         if puzzle_type == "HashCommitment":
             solution_hash_commitment = latest_block_data.get('solution_hash')
             proposed_solution_hash = hashlib.sha256(proposed_solution.encode()).hexdigest()
             if proposed_solution_hash == solution_hash_commitment: is_solution_correct = True
+        
         elif puzzle_type == "HashingChallenge":
             try:
                 nonce = int(proposed_solution)
@@ -147,28 +145,22 @@ class Blockchain:
                 prefix, zeros = puzzle_data.get('prefix', ''), puzzle_data.get('zeros', 0)
                 if hashlib.sha256(f"{prefix}{nonce}".encode()).hexdigest().startswith("0" * zeros): is_solution_correct = True
             except (ValueError, TypeError): return None
+
         if not is_solution_correct:
             print("Failed Mint Attempt: Incorrect solution.")
             return None
-        # --- End of verification ---
 
         print("Solution Correct! Forging new block...")
         
-        # CHANGED: The seed for the NEXT puzzle is the hash of the block we are about to create.
-        # But the hash depends on the puzzle, creating a circular dependency.
-        # The seed MUST be from the LATEST block that is already confirmed.
         previous_block_hash_as_seed = self.latest_block['hash']
         next_block_index = len(self.chain)
-        next_puzzle_package = self.puzzle_master.create_new_puzzle(
-            difficulty_level=next_block_index,
-            seed=previous_block_hash_as_seed
-        )
+        next_puzzle_package = self.puzzle_master.create_new_puzzle(difficulty_level=next_block_index, seed=previous_block_hash_as_seed)
         
-        # ... Creating transactions and the new block remains the same ...
         total_fees = len(self.pending_transactions) * self.transaction_fee
         total_reward = 1 + total_fees
         mint_tx = Transaction(sender="MINT_REWARD", recipient=solver_wallet.address, amount=total_reward)
         all_transactions = [mint_tx] + self.pending_transactions
+
         new_block = Block(index=next_block_index, transactions=[tx.__dict__ for tx in all_transactions], timestamp=time.time(), previous_hash=self.latest_block['hash'], data=next_puzzle_package)
 
         self.chain.append(new_block.__dict__)
@@ -177,6 +169,5 @@ class Blockchain:
         print(f"Success! Block #{new_block.index} created.")
         return new_block
     
-    # ... get_address_data, register_node, resolve_conflicts methods remain the same ...
     def get_address_data(self, address): txs, balance = [], 0.0; [((balance := balance + tx['amount'], txs.append(tx)) if tx['recipient'] == address else (balance := balance - tx['amount'], txs.append(tx))) for block in self.chain for tx in block['transactions']]; return {'address': address, 'balance': balance, 'transactions': txs, 'transaction_count': len(txs)}
         
