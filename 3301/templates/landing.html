@@ -9,6 +9,7 @@
 </head>
 <body>
     <div class="container">
+        <!-- Hero Section -->
         <section class="hero">
             <img src="/static/logo.png" alt="C3301 Logo" class="header-logo">
             <h1>C3301</h1>
@@ -19,13 +20,30 @@
             </div>
         </section>
 
+        <!-- About Section -->
         <section id="about" class="card">
             <h2>What is C3301?</h2>
             <p>
                 C3301 is a new class of digital asset where value is derived from intellectual effort. Unlike Bitcoin, where new coins are mined by computers, new C3301 tokens can only be discovered by people solving increasingly difficult cryptographic puzzles. With a fixed supply of only 3,301 tokens, each coin is a permanent, on-chain trophy of ingenuity.
             </p>
         </section>
+
+        <!-- NEW Puzzle Simulator Section -->
+        <section id="puzzle-simulator" class="card">
+            <h2>Test Your Skill: Puzzle Simulator</h2>
+            <div class="sim-puzzle-area">
+                <p id="sim-puzzle-text">Loading puzzle...</p>
+                <small id="sim-puzzle-clue"></small>
+            </div>
+            <div class="sim-input-area">
+                <input type="text" id="sim-solution-input" placeholder="Enter Your Solution">
+                <button id="sim-check-btn">Check Answer</button>
+            </div>
+            <p id="sim-result" class="sim-result"></p>
+            <button id="sim-refresh-btn" class="secondary">New Puzzle</button>
+        </section>
         
+        <!-- Features Section -->
         <div class="features-grid">
             <div class="feature-card card">
                 <h3>Extreme Scarcity</h3>
@@ -41,6 +59,7 @@
             </div>
         </div>
 
+        <!-- Final CTA Section -->
         <section class="final-cta card">
             <h2>Join The Hunt</h2>
             <p>Explore the blockchain, view the latest puzzles, or read the whitepaper to learn more.</p>
@@ -54,5 +73,8 @@
     <footer class="main-footer">
         <p>&copy; 2025 Janus & The C3301 Project. All rights reserved.</p>
     </footer>
+
+    <!-- Link the new JavaScript file -->
+    <script src="/static/puzzle-simulator.js"></script>
 </body>
 </html>
