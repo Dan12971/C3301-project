@@ -159,3 +159,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initial Actions on Page Load ---
     refreshChain();
 });
+
+    // ... (inside the DOMContentLoaded listener) ...
+
+    // --- Add a reference to the new button ---
+    const forgeBlockBtn = document.getElementById('forge-block-btn');
+
+    // --- Add the new forging function ---
+    const forgeTransactionBlock = async () => {
+        if (!walletAddress) {
+            alert('Please generate a wallet to receive the forging fees.');
+            return;
+        }
+        console.log("Attempting to forge a new block...");
+        try {
+            const result = await api.post('/forge', { forger_address: walletAddress });
+            updateResponseBox(result);
+            // Refresh the chain view to see the new transaction block
+            if (result.message.includes('Forged')) {
+                await refreshChain();
+            }
+        } catch (e) {
+            handleError("Forging failed", e);
+        }
+    };
+
+    // --- Add the new event listener ---
+    forgeBlockBtn.addEventListener('click', forgeTransactionBlock);
+
