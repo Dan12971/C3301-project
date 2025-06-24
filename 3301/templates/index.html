@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C3301 Blockchain Interface</title>
+    <link rel="icon" type="image/png" href="/static/logo.png">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="/static/logo.png" alt="C3301 Logo" class="header-logo">
+            <h1>C3301 Interface</h1>
+            <p>An experimental cryptocurrency built on intellectual discovery.</p>
+        </header>
+
+        <div id="main-grid">
+            <section id="wallet-section" class="card">
+                <h2>1. My Wallet</h2>
+                <button id="generate-wallet-btn">Generate New Wallet</button>
+                <div id="wallet-info" style="display:none; margin-top: 1rem;">
+                    <p><strong>Address:</strong><br><span id="wallet-address"></span></p>
+                    <p class="warning"><strong>Private Key:</strong><br><span id="wallet-private-key"></span></p>
+                    <small>Warning: Keep your private key secret. Shown for demonstration only.</small>
+                </div>
+            </section>
+
+            <section id="send-tx-section" class="card">
+                <h2>2. Send C3301</h2>
+                <form id="send-tx-form">
+                    <input type="text" id="recipient-address" placeholder="Recipient Address" required>
+                    <input type="number" step="any" id="send-amount" placeholder="Amount" required>
+                    <small>A fixed transaction fee of 0.001 C3301 will be applied.</small>
+                    <button type="submit">Sign & Send Transaction</button>
+                </form>
+            </section>
+
+            <section id="mint-section" class="card">
+                <h2>3. Mint New Tokens</h2>
+                <p>Solve the puzzle from the latest block on the explorer to mint 1 C3301.</p>
+                <form id="mint-form">
+                    <input type="text" id="secret-phrase" placeholder="Enter Decrypted Solution" required>
+                    <button type="submit">Attempt to Mint</button>
+                </form>
+            </section>
+
+            <section id="response-section" class="card">
+                <h2>Server Response</h2>
+                <pre id="api-response-box">Waiting for action...</pre>
+            </section>
+        </div>
+
+        <section id="chain-view-section" class="card">
+            <h2>Blockchain Viewer <small>(Latest Block)</small></h2>
+            <button id="refresh-chain-btn">Refresh Chain View</button>
+            <div id="blockchain-view"></div>
+        </section>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
