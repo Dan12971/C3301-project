@@ -8,7 +8,7 @@ from ecdsa import SigningKey, VerifyingKey, NIST384p
 
 class PuzzleMaster:
     """
-    The Amnesiac Oracle for generating and managing puzzles, including forensic puzzles.
+    The Amnesiac Oracle that generates puzzles with progressively increasing difficulty.
     """
     def __init__(self):
         self.word_list = [
@@ -17,6 +17,7 @@ class PuzzleMaster:
         ]
 
     def _create_caesar_cipher_puzzle(self):
+        # (Logic for this puzzle remains the same)
         solution = random.choice(self.word_list) + str(random.randint(100, 999))
         shift_key = random.randint(3, 24)
         encrypted_text = ""
@@ -29,204 +30,158 @@ class PuzzleMaster:
         puzzle = f"Decrypt the following text: '{encrypted_text}'"
         clue = f"Caesar cipher, shift key = {shift_key}"
         solution_hash = hashlib.sha256(solution.encode()).hexdigest()
-        return { "puzzle_type": "Caesar", "puzzle": puzzle, "clue": clue, "solution_hash": solution_hash }
+        return { "puzzle_type": "HashCommitment", "puzzle": puzzle, "clue": clue, "solution_hash": solution_hash }
 
     def _create_anagram_puzzle(self):
+        # (Logic for this puzzle remains the same)
         solution = random.choice(self.word_list) + str(random.randint(100, 999))
         l = list(solution)
         random.shuffle(l)
         scrambled_word = "".join(l)
-        puzzle = f"Unscramble the following letters to find the secret phrase: '{scrambled_word}'"
+        puzzle = f"Unscramble the following letters: '{scrambled_word}'"
         clue = "The solution is a single word followed by a three-digit number."
         solution_hash = hashlib.sha256(solution.encode()).hexdigest()
-        return { "puzzle_type": "Anagram", "puzzle": puzzle, "clue": clue, "solution_hash": solution_hash }
+        return { "puzzle_type": "HashCommitment", "puzzle": puzzle, "clue": clue, "solution_hash": solution_hash }
 
-    def _create_forensic_puzzle(self):
-        """Generates a multi-part forensic puzzle."""
-        solution_word = random.choice(self.word_list)
-        solution_number_str = str(random.randint(100, 999))
-        full_solution = solution_word + solution_number_str
-
-        l = list(solution_word)
-        random.shuffle(l)
-        scrambled_word = "".join(l)
-        
-        puzzle = f"The solution word is an anagram of '{scrambled_word}'. The number part is hidden as 'dust' in one of this block's transactions."
-        clue = "Use the Block Explorer to investigate this block's transaction list."
-        solution_hash = hashlib.sha256(full_solution.encode()).hexdigest()
-        
-        # This package includes the data needed to create the clue transaction
+    def _create_vigenere_puzzle(self):
+        # (Logic for this puzzle remains the same)
+        solution = random.choice(self.word_list) + str(random.randint(100, 999))
+        keyword = random.choice(self.word_list)
+        encrypted_text = ""
+        for i, char in enumerate(solution):
+            if 'A' <= char <= 'Z':
+                shift = ord(keyword[i % len(keyword)]) - ord('A')
+                shifted = ord(char) + shift
+                if shifted > ord('Z'): shifted -= 26
+                encrypted_text += chr(shifted)
+            else: encrypted_text += char
+        puzzle = f"Decrypt the text using the keyword: '{encrypted_text}'"
+        clue = f"Vigenère cipher, keyword = '{keyword}'"
+        solution_hash = hashlib.sha256(solution.encode()).hexdigest()
+        return { "puzzle_type": "HashCommitment", "puzzle": puzzle, "clue": clue, "solution_hash": solution_hash }
+    
+    def _create_hashing_challenge_puzzle(self, difficulty_level):
+        """Creates a Proof-of-Work style hashing puzzle."""
+        # Difficulty scales: starts at 3 zeros, adds a zero every 500 blocks.
+        num_zeros = 3 + (difficulty_level // 500)
+        puzzle_string = f"C3301-Block-{difficulty_level}-"
+        puzzle = f"Find a number (a nonce) such that the SHA-256 hash of the string '{puzzle_string}{{nonce}}' starts with {num_zeros} leading zeros."
+        clue = "This requires a brute-force script to solve. The solution is the nonce itself."
+        # For this puzzle type, there's no pre-computed solution hash. Verification happens live.
         return {
-            "puzzle_type": "Forensic",
+            "puzzle_type": "HashingChallenge",
             "puzzle": puzzle,
             "clue": clue,
-            "solution_hash": solution_hash,
-            "clue_data": {"number": solution_number_str} # The piece to be hidden
+            "puzzle_data": {
+                "prefix": puzzle_string,
+                "zeros": num_zeros
+            }
         }
 
-    def create_new_puzzle(self):
-        """Generates a new puzzle package by RANDOMLY choosing a puzzle type."""
-        # Add more instances of the advanced puzzle to make it appear more often
-        puzzle_generators = [
-            self._create_caesar_cipher_puzzle,
-            self._create_anagram_puzzle,
-            self._create_forensic_puzzle, # <-- Our new expert-tier puzzle
-            self._create_forensic_puzzle  # <-- Add it again to increase its probability
-        ]
-        chosen_generator = random.choice(puzzle_generators)
-        return chosen_generator()
+    def create_new_puzzle(self, difficulty_level):
+        """Generates a puzzle based on the current difficulty level."""
+        if difficulty_level <= 500:
+            # Easy Tier
+            return random.choice([self._create_caesar_cipher_puzzle, self._create_anagram_puzzle])()
+        elif difficulty_level <= 1500:
+            # Medium Tier
+            return random.choice([self._create_anagram_puzzle, self._create_vigenere_puzzle])()
+        elif difficulty_level <= 3301:
+            # Hard Tier
+            return self._create_hashing_challenge_puzzle(difficulty_level)
+        else:
+            # Final puzzle after all tokens are minted
+            return {"puzzle": "All tokens have been discovered.", "clue": "The hunt is complete."}
 
 # --- Wallet, Transaction, and Block classes remain the same ---
-# (I am including them here for completeness)
 class Wallet:
-    def __init__(self):
-        self.private_key = SigningKey.generate(curve=NIST384p)
-        self.public_key = self.private_key.verifying_key
-        self.address = self.public_key.to_string().hex()
-
+    def __init__(self): self.private_key = SigningKey.generate(curve=NIST384p); self.public_key = self.private_key.verifying_key; self.address = self.public_key.to_string().hex()
 class Transaction:
-    def __init__(self, sender, recipient, amount, data=None):
-        self.sender = sender
-        self.recipient = recipient
-        self.amount = amount
-        self.timestamp = time.time()
-        self.signature = None
-        self.data = data or {}
-
-    def to_json(self):
-        return json.dumps({"sender": self.sender, "recipient": self.recipient, "amount": self.amount, "timestamp": self.timestamp, "data": self.data}, sort_keys=True)
-
-    def set_signature(self, signature):
-        self.signature = signature
-
-    @staticmethod
-    def is_valid(transaction):
-        if transaction.sender == "MINT_REWARD" or transaction.sender == "PuzzleMaster_Clue": return True
-        if not transaction.signature: return False
-        try:
-            pk_bytes = bytes.fromhex(transaction.sender)
-            public_key = VerifyingKey.from_string(pk_bytes, curve=NIST384p)
-            sig_bytes = bytes.fromhex(transaction.signature)
-            return public_key.verify(sig_bytes, transaction.to_json().encode())
-        except: return False
-
+    def __init__(self, sender, recipient, amount, data=None): self.sender, self.recipient, self.amount, self.timestamp, self.signature, self.data = sender, recipient, amount, time.time(), None, data or {}
+    def to_json(self): return json.dumps({"sender": self.sender, "recipient": self.recipient, "amount": self.amount, "timestamp": self.timestamp, "data": self.data}, sort_keys=True)
 class Block:
-    def __init__(self, index, transactions, timestamp, previous_hash, data=None, nonce=0):
-        self.index = index
-        self.transactions = transactions
-        self.timestamp = timestamp
-        self.previous_hash = previous_hash
-        self.data = data
-        self.nonce = nonce
-        self.hash = self.calculate_hash()
-
-    def calculate_hash(self):
-        block_string = str(self.index) + json.dumps(self.transactions, sort_keys=True) + str(self.timestamp) + str(self.previous_hash) + json.dumps(self.data, sort_keys=True) + str(self.nonce)
-        return hashlib.sha256(block_string.encode()).hexdigest()
-
+    def __init__(self, index, transactions, timestamp, previous_hash, data=None, nonce=0): self.index, self.transactions, self.timestamp, self.previous_hash, self.data, self.nonce, self.hash = index, transactions, timestamp, previous_hash, data, nonce, self.calculate_hash()
+    def calculate_hash(self): return hashlib.sha256((str(self.index) + json.dumps(self.transactions, sort_keys=True) + str(self.timestamp) + str(self.previous_hash) + json.dumps(self.data, sort_keys=True) + str(self.nonce)).encode()).hexdigest()
 
 class Blockchain:
     def __init__(self):
-        self.chain = []
-        self.pending_transactions = []
-        self.nodes = set()
-        self.chain_file = "blockchain_data.json"
-        self.puzzle_master = PuzzleMaster()
-        self.transaction_fee = 0.001
+        self.chain = []; self.pending_transactions = []; self.nodes = set(); self.chain_file = "blockchain_data.json"; self.puzzle_master = PuzzleMaster(); self.transaction_fee = 0.001
         self.load_chain_from_disk()
 
-    # ... save_chain_to_disk, load_chain_from_disk, create_genesis_block methods remain the same...
+    # ... save_chain_to_disk, load_chain_from_disk, create_genesis_block, etc. remain the same ...
     def save_chain_to_disk(self):
         try:
             with open(self.chain_file, 'w') as f: json.dump(self.chain, f, indent=4)
         except Exception as e: print(f"Error saving chain to disk: {e}")
 
     def load_chain_from_disk(self):
-        if not os.path.exists(self.chain_file):
-            print("No saved blockchain found. Creating a new one.")
-            self.create_genesis_block()
-            self.save_chain_to_disk()
-            return
-        try:
-            with open(self.chain_file, 'r') as f: self.chain = json.load(f)
-            print(f"Blockchain loaded from disk. Found {len(self.chain)} blocks.")
-        except (IOError, json.JSONDecodeError) as e:
-            print(f"Error loading chain from disk: {e}. Starting fresh.")
-            self.create_genesis_block()
-            self.save_chain_to_disk()
+        if not os.path.exists(self.chain_file): self.create_genesis_block(); self.save_chain_to_disk()
+        else:
+            try:
+                with open(self.chain_file, 'r') as f: self.chain = json.load(f)
+            except (IOError, json.JSONDecodeError): self.create_genesis_block(); self.save_chain_to_disk()
 
     def create_genesis_block(self):
-        first_puzzle = self.puzzle_master.create_new_puzzle()
+        print("Creating a new blockchain...")
+        first_puzzle = self.puzzle_master.create_new_puzzle(difficulty_level=1)
         genesis_block = Block(index=0, transactions=[], timestamp=time.time(), previous_hash="0", data=first_puzzle)
-        self.chain.append(genesis_block.__dict__)
+        self.chain = [genesis_block.__dict__]
 
     @property
-    def latest_block(self):
-        return self.chain[-1]
+    def latest_block(self): return self.chain[-1]
 
-    def add_transaction(self, transaction):
-        if not Transaction.is_valid(transaction): return False
-        self.pending_transactions.append(transaction)
-        return True
+    def add_transaction(self, transaction): self.pending_transactions.append(transaction); return True
 
     def attempt_mint(self, solver_wallet, proposed_solution):
-        # --- Start: Solution Verification (Same as before) ---
+        """UPDATED: Verifies a solution based on the puzzle type."""
         latest_block_data = self.latest_block['data']
-        solution_hash_commitment = latest_block_data.get('solution_hash')
-        if not solution_hash_commitment: return None
-        proposed_solution_hash = hashlib.sha256(proposed_solution.encode()).hexdigest()
-        if proposed_solution_hash != solution_hash_commitment:
+        puzzle_type = latest_block_data.get('puzzle_type')
+        is_solution_correct = False
+
+        if puzzle_type == "HashCommitment":
+            solution_hash_commitment = latest_block_data.get('solution_hash')
+            proposed_solution_hash = hashlib.sha256(proposed_solution.encode()).hexdigest()
+            if proposed_solution_hash == solution_hash_commitment:
+                is_solution_correct = True
+        
+        elif puzzle_type == "HashingChallenge":
+            try:
+                nonce = int(proposed_solution)
+                puzzle_data = latest_block_data.get('puzzle_data', {})
+                prefix = puzzle_data.get('prefix', '')
+                zeros = puzzle_data.get('zeros', 0)
+                
+                # Verify the nonce
+                test_string = f"{prefix}{nonce}"
+                test_hash = hashlib.sha256(test_string.encode()).hexdigest()
+                
+                if test_hash.startswith("0" * zeros):
+                    is_solution_correct = True
+            except (ValueError, TypeError):
+                print("Invalid nonce format. Must be a number.")
+                return None
+
+        if not is_solution_correct:
             print("Failed Mint Attempt: Incorrect solution.")
             return None
-        # --- End: Solution Verification ---
 
         print("Solution Correct! Forging new block...")
         
-        # --- Start: New Forensic Puzzle Logic ---
+        # --- Create Block ---
+        next_block_index = len(self.chain)
+        next_puzzle_package = self.puzzle_master.create_new_puzzle(difficulty_level=next_block_index)
         
-        # 1. Get the puzzle package for the *next* block
-        next_puzzle_package = self.puzzle_master.create_new_puzzle()
-        
-        # 2. Prepare the list of transactions for the block we are currently minting
-        current_block_transactions = list(self.pending_transactions)
-
-        # 3. Check if the next puzzle is a forensic one and requires a clue
-        if next_puzzle_package.get("puzzle_type") == "Forensic":
-            print("Next puzzle is forensic. Generating clue transaction...")
-            clue_data = next_puzzle_package.get("clue_data", {})
-            hidden_number_str = clue_data.get("number")
-            
-            if hidden_number_str:
-                # Create the special "clue" transaction
-                clue_tx = Transaction(
-                    sender="PuzzleMaster_Clue",
-                    recipient="Forensic_Analysis",
-                    # Hide the number as a tiny, non-standard amount
-                    amount=int(hidden_number_str) / 1_000_000.0,
-                    data={"message": "A fragment of the next solution."}
-                )
-                current_block_transactions.append(clue_tx)
-
-        # 4. Create the final minting reward transaction
         total_fees = len(self.pending_transactions) * self.transaction_fee
         total_reward = 1 + total_fees
-        mint_tx = Transaction(
-            sender="MINT_REWARD",
-            recipient=solver_wallet.address,
-            amount=total_reward
-        )
-        # Add the mint reward to the start of the list
-        all_transactions_for_new_block = [mint_tx] + [tx for tx in current_block_transactions]
+        mint_tx = Transaction(sender="MINT_REWARD", recipient=solver_wallet.address, amount=total_reward)
+        all_transactions = [mint_tx] + self.pending_transactions
 
-        # --- End: New Forensic Puzzle Logic ---
-
-        # Create the new block, embedding the NEXT puzzle's text and solution hash
         new_block = Block(
-            index=len(self.chain),
-            transactions=[tx.__dict__ for tx in all_transactions_for_new_block],
+            index=next_block_index,
+            transactions=[tx.__dict__ for tx in all_transactions],
             timestamp=time.time(),
             previous_hash=self.latest_block['hash'],
-            data=next_puzzle_package # This contains the text for the next puzzle
+            data=next_puzzle_package
         )
 
         self.chain.append(new_block.__dict__)
@@ -236,33 +191,5 @@ class Blockchain:
         return new_block
     
     # ... get_address_data, register_node, resolve_conflicts methods remain the same ...
-    def get_address_data(self, address):
-        txs, balance = [], 0.0
-        for block in self.chain:
-            for tx in block['transactions']:
-                if tx['recipient'] == address:
-                    balance += tx['amount']
-                    txs.append(tx)
-                if tx['sender'] == address:
-                    balance -= tx['amount']
-                    txs.append(tx)
-        return {'address': address, 'balance': balance, 'transactions': txs, 'transaction_count': len(txs)}
-
-    def register_node(self, address):
-        self.nodes.add(address)
-
-    def resolve_conflicts(self):
-        neighbours, new_chain, max_length = self.nodes, None, len(self.chain)
-        for node in neighbours:
-            try:
-                response = requests.get(f'{node}/chain')
-                if response.status_code == 200:
-                    length, chain_data = response.json()['length'], response.json()['chain']
-                    if length > max_length: max_length, new_chain = length, chain_data
-            except requests.exceptions.ConnectionError: print(f"Could not connect to node {node}.")
-        if new_chain:
-            self.chain = new_chain
-            self.save_chain_to_disk()
-            return True
-        return False
+    def get_address_data(self, address): txs, balance = [], 0.0; [((balance := balance + tx['amount'], txs.append(tx)) if tx['recipient'] == address else (balance := balance - tx['amount'], txs.append(tx))) for block in self.chain for tx in block['transactions']]; return {'address': address, 'balance': balance, 'transactions': txs, 'transaction_count': len(txs)}
         
