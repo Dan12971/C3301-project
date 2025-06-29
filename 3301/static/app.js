@@ -1,189 +1,69 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // State variables to hold wallet info
-    let walletAddress = null;
-    let walletPrivateKey = null;
-
-    // References to all the interactive HTML elements
-    const generateWalletBtn = document.getElementById('generate-wallet-btn');
-    const walletInfoDiv = document.getElementById('wallet-info');
-    const walletAddressSpan = document.getElementById('wallet-address');
-    const walletPrivateKeySpan = document.getElementById('wallet-private-key');
-    const sendTxForm = document.getElementById('send-tx-form');
-    const mintForm = document.getElementById('mint-form');
-    const refreshChainBtn = document.getElementById('refresh-chain-btn');
-    const blockchainViewDiv = document.getElementById('blockchain-view');
-    const apiResponseBox = document.getElementById('api-response-box');
-
-    // --- Helper function for API calls ---
+    let walletAddress = null, walletPrivateKey = null;
+    const elements = {
+        generateWalletBtn: document.getElementById('generate-wallet-btn'),
+        walletInfoDiv: document.getElementById('wallet-info'),
+        walletAddressSpan: document.getElementById('wallet-address'),
+        walletPrivateKeySpan: document.getElementById('wallet-private-key'),
+        sendTxForm: document.getElementById('send-tx-form'),
+        mintForm: document.getElementById('mint-form'),
+        refreshChainBtn: document.getElementById('refresh-chain-btn'),
+        blockchainViewDiv: document.getElementById('blockchain-view'),
+        apiResponseBox: document.getElementById('api-response-box')
+    };
     const api = {
-        get: async (endpoint) => {
-            const response = await fetch(endpoint);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            return response.json();
-        },
-        post: async (endpoint, body) => {
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body),
-            });
-            if (!response.ok) {
-                 const errorBody = await response.json();
-                 throw new Error(`HTTP error! status: ${response.status}, message: ${errorBody.message || 'Unknown error'}`);
-            }
-            return response.json();
-        }
+        get: async (endpoint) => { const r = await fetch(endpoint); if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`); return r.json(); },
+        post: async (endpoint, body) => { const r = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); if (!r.ok) { const e = await r.json(); throw new Error(`HTTP error! status: ${r.status}, message: ${e.message||'Unknown'}`); } return r.json(); }
     };
-
-    const updateResponseBox = (data) => {
-        apiResponseBox.textContent = JSON.stringify(data, null, 2);
-    };
-
-    // --- Wallet Functions ---
-    const generateWallet = async () => {
-        try {
-            const data = await api.get('/wallet');
-            walletAddress = data.public_address;
-            walletPrivateKey = data.private_key;
-
-            walletAddressSpan.textContent = walletAddress;
-            walletPrivateKeySpan.textContent = walletPrivateKey;
-            walletInfoDiv.style.display = 'block';
-            updateResponseBox(data);
-        } catch (error) {
-            console.error("Failed to generate wallet:", error);
-            updateResponseBox({ error: error.message });
-        }
-    };
-
-    // --- Blockchain Functions ---
-    const refreshChain = async () => {
-        try {
-            const data = await api.get('/chain');
-            blockchainViewDiv.innerHTML = ''; // Clear previous view
-            data.chain.forEach(block => {
-                const blockElement = document.createElement('div');
-                blockElement.className = 'block-view';
-                const content = document.createElement('pre');
-                content.textContent = JSON.stringify(block, null, 2);
-                blockElement.appendChild(content);
-                blockchainViewDiv.appendChild(blockElement);
-            });
-            updateResponseBox({ message: `Chain refreshed. Length: ${data.length}`});
-        } catch (error) {
-            console.error("Failed to refresh chain:", error);
-            updateResponseBox({ error: error.message });
-        }
-    };
-
-    // --- Transaction Functions ---
+    const updateResponseBox = data => { elements.apiResponseBox.textContent = JSON.stringify(data, null, 2); };
+    const handleError = (context, error) => { console.error(`${context}:`, error); updateResponseBox({ error: error.message }); };
+    const generateWallet = async () => { try { const data = await api.get('/wallet'); walletAddress = data.public_address; walletPrivateKey = data.private_key; elements.walletAddressSpan.textContent = walletAddress; elements.walletPrivateKeySpan.textContent = walletPrivateKey; elements.walletInfoDiv.style.display = 'block'; updateResponseBox(data); } catch (e) { handleError("Failed to generate wallet", e); } };
+    const refreshChain = async () => { try { const data = await api.get('/chain'); elements.blockchainViewDiv.innerHTML = ''; const latestBlock = data.chain.slice(-1)[0]; const blockEl = document.createElement('div'); blockEl.className = 'block-view'; const content = document.createElement('pre'); content.textContent = JSON.stringify(latestBlock, null, 2); blockEl.appendChild(content); elements.blockchainViewDiv.appendChild(blockEl); updateResponseBox({ message: `Chain refreshed. Length: ${data.length}` }); } catch (e) { handleError("Failed to refresh chain", e); } };
+    
+    // REWRITTEN to handle timestamp correctly
     const sendTransaction = async (event) => {
         event.preventDefault();
-        if (!walletAddress || !walletPrivateKey) {
-            alert('Please generate a wallet first.');
-            return;
-        }
-
+        if (!walletAddress) return alert('Please generate a wallet first.');
         const recipient = document.getElementById('recipient-address').value;
         const amount = parseFloat(document.getElementById('send-amount').value);
-        if (!recipient || isNaN(amount) || amount <= 0) {
-            alert('Please enter a valid recipient and amount.');
-            return;
-        }
+        if (!recipient || isNaN(amount) || amount <= 0) return alert('Please enter a valid recipient and amount.');
+
+        // 1. Generate the timestamp ONCE, here in the browser.
+        const timestamp = Date.now() / 1000.0;
 
         try {
-            // Step 1: Get the signature from our insecure demo endpoint
+            // 2. Send the timestamp to the signing endpoint.
             const signPayload = {
                 private_key: walletPrivateKey,
                 sender: walletAddress,
                 recipient: recipient,
                 amount: amount,
+                timestamp: timestamp
             };
             const signedData = await api.post('/transactions/sign', signPayload);
             const signature = signedData.signature;
 
-            // Step 2: Send the fully-formed transaction to the network
+            // 3. Send the SAME timestamp to the new transaction endpoint.
             const txPayload = {
                 sender: walletAddress,
                 recipient: recipient,
                 amount: amount,
-                signature: signature
+                signature: signature,
+                timestamp: timestamp
             };
             const result = await api.post('/transactions/new', txPayload);
             updateResponseBox(result);
-            sendTxForm.reset();
+            elements.sendTxForm.reset();
 
-        } catch (error) {
-            console.error("Transaction failed:", error);
-            updateResponseBox({ error: error.message });
+        } catch (e) {
+            handleError("Transaction failed", e);
         }
     };
 
-    // --- Minting Functions ---
-    const mintCoin = async (event) => {
-        event.preventDefault();
-        if (!walletAddress) {
-            alert('Please generate a wallet to receive the mint reward.');
-            return;
-        }
-        const phrase = document.getElementById('secret-phrase').value;
-        if (!phrase) {
-            alert('Please enter a secret phrase.');
-            return;
-        }
-
-        try {
-            const payload = {
-                solver_address: walletAddress,
-                secret_phrase: phrase
-            };
-            const result = await api.post('/mint', payload);
-            updateResponseBox(result);
-            mintForm.reset();
-            // Automatically refresh the chain to see the new block
-            if (result.message.includes('New Block Forged')) {
-                await refreshChain();
-            }
-        } catch (error) {
-            console.error("Minting failed:", error);
-            updateResponseBox({ error: error.message });
-        }
-    };
-
-    // --- Event Listeners to Connect Functions to Buttons ---
-    generateWalletBtn.addEventListener('click', generateWallet);
-    refreshChainBtn.addEventListener('click', refreshChain);
-    sendTxForm.addEventListener('submit', sendTransaction);
-    mintForm.addEventListener('submit', mintCoin);
-    
-    // --- Initial Actions on Page Load ---
+    const mintCoin = async (event) => { event.preventDefault(); if (!walletAddress) return alert('Please generate a wallet to receive the mint reward.'); const phrase = document.getElementById('secret-phrase').value; if (!phrase) return alert('Please enter a secret phrase.'); try { const result = await api.post('/mint', { solver_address: walletAddress, secret_phrase: phrase }); updateResponseBox(result); elements.mintForm.reset(); if (result.message.includes('New Block Forged')) await refreshChain(); } catch (e) { handleError("Minting failed", e); } };
+    elements.generateWalletBtn.addEventListener('click', generateWallet);
+    elements.refreshChainBtn.addEventListener('click', refreshChain);
+    elements.sendTxForm.addEventListener('submit', sendTransaction);
+    elements.mintForm.addEventListener('submit', mintCoin);
     refreshChain();
 });
-
-    // ... (inside the DOMContentLoaded listener) ...
-
-    // --- Add a reference to the new button ---
-    const forgeBlockBtn = document.getElementById('forge-block-btn');
-
-    // --- Add the new forging function ---
-    const forgeTransactionBlock = async () => {
-        if (!walletAddress) {
-            alert('Please generate a wallet to receive the forging fees.');
-            return;
-        }
-        console.log("Attempting to forge a new block...");
-        try {
-            const result = await api.post('/forge', { forger_address: walletAddress });
-            updateResponseBox(result);
-            // Refresh the chain view to see the new transaction block
-            if (result.message.includes('Forged')) {
-                await refreshChain();
-            }
-        } catch (e) {
-            handleError("Forging failed", e);
-        }
-    };
-
-    // --- Add the new event listener ---
-    forgeBlockBtn.addEventListener('click', forgeTransactionBlock);
-
