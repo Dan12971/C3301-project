@@ -1,0 +1,28 @@
+[
+    {
+        "id": "phase1_announcement",
+        "type": "static_post",
+        "platform": "discord",
+        "post_time": "2025-06-25T12:00:00Z",
+        "content": "The Hunt begins. Look closer.\n\nZMIH, AYTQLZ...\nQEX SFHAYFF JWZUHYS JBPX.\n\nThe key is in our genesis.\n\n#C3301",
+        "image": "static/logo.png",
+        "posted": false
+    },
+    {
+        "id": "phase2_first_riddle",
+        "type": "generated_riddle",
+        "platform": "discord",
+        "post_time": "2025-06-28T18:00:00Z",
+        "content_prefix": "A new echo resonates for those who listen. Consider this:",
+        "posted": false
+    },
+    {
+        "id": "phase3_final_clue",
+        "type": "static_post",
+        "platform": "discord",
+        "post_time": "2025-07-01T20:00:00Z",
+        "content": "The path is not a line, but a loop. What began The Hunt holds the key to its continuation.",
+        "posted": false
+    }
+]
+
