@@ -14,7 +14,7 @@ def app_ui(): return render_template('app.html')
 @app.route('/explorer')
 def explorer_ui(): return render_template('explorer.html')
 
-# --- API Endpoints for Core Functionality ---
+# --- API Endpoints ---
 @app.route('/wallet', methods=['GET'])
 def get_wallet():
     wallet = Wallet()
@@ -22,55 +22,47 @@ def get_wallet():
 
 @app.route('/chain', methods=['GET'])
 def get_chain():
-    # BUG FIX: Convert list of Block objects to list of dictionaries for JSON response
     chain_data = [vars(block) for block in blockchain.chain]
     return jsonify({'chain': chain_data, 'length': len(chain_data)}), 200
 
-# REWRITTEN for correctness and robustness
+# UPDATED to handle timestamp
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
-    """
-    Receives all parts of a transaction, creates a Transaction object,
-    validates it, and adds it to the pending pool if valid.
-    """
     values = request.get_json()
-    required = ['sender', 'recipient', 'amount', 'signature']
+    required = ['sender', 'recipient', 'amount', 'signature', 'timestamp']
     if not all(k in values for k in required):
         return jsonify({'message': 'Missing values in transaction data'}), 400
 
-    # Create a proper Transaction object from the received data
     tx_object = Transaction(
         sender=values['sender'],
         recipient=values['recipient'],
-        amount=values['amount']
+        amount=values['amount'],
+        timestamp=values['timestamp'] # Use the timestamp from the request
     )
     tx_object.set_signature(values['signature'])
 
-    # The add_transaction method now performs validation
     if blockchain.add_transaction(tx_object):
-        response = {'message': 'Transaction is valid and has been added to the pending pool.'}
-        return jsonify(response), 201
+        return jsonify({'message': 'Transaction is valid and added to pool.'}), 201
     else:
-        response = {'message': 'Transaction failed validation and was rejected.'}
-        return jsonify(response), 400
+        return jsonify({'message': 'Transaction failed validation.'}), 400
 
+# UPDATED to handle timestamp
 @app.route('/transactions/sign', methods=['POST'])
 def sign_transaction_request():
     values = request.get_json()
-    required = ['private_key', 'sender', 'recipient', 'amount']
+    required = ['private_key', 'sender', 'recipient', 'amount', 'timestamp']
     if not all(k in values for k in required): return jsonify({'message': 'Missing values'}), 400
     try:
         pk_obj = SigningKey.from_string(bytes.fromhex(values['private_key']), curve=NIST384p)
-        tx = Transaction(values['sender'], values['recipient'], values['amount'])
+        # Create transaction with the provided timestamp
+        tx = Transaction(values['sender'], values['recipient'], values['amount'], timestamp=values['timestamp'])
         signature = pk_obj.sign(tx.to_json().encode())
         return jsonify({'signature': signature.hex()}), 200
     except Exception as e:
-        # BUG FIX: Return a proper JSON error response
         return jsonify({'message': f"Error during signing: {e}"}), 500
 
 @app.route('/mint', methods=['POST'])
 def mint_coin():
-    # ... (This endpoint is correct and does not need changes)
     values = request.get_json(); required = ['solver_address', 'secret_phrase']
     if not all(k in values for k in required): return jsonify({'message': 'Missing values'}), 400
     class SolverWallet: address = values['solver_address']
@@ -79,12 +71,9 @@ def mint_coin():
         return jsonify({'message': 'New Block Forged!', 'block': vars(new_block)}), 200
     return jsonify({'message': 'Minting failed. Invalid solution.'}), 400
 
-# --- API Endpoints for Explorer ---
 @app.route('/address/<address>', methods=['GET'])
 def get_address_info(address): return jsonify(blockchain.get_address_data(address)), 200
 
-# --- Main execution ---
 if __name__ == '__main__':
     parser = ArgumentParser(); parser.add_argument('-p', '--port', default=5000, type=int, help='port to listen on'); args = parser.parse_args()
     app.run(host='0.0.0.0', port=args.port)
-    
