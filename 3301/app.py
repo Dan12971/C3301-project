@@ -25,7 +25,7 @@ def get_chain():
     chain_data = [vars(block) for block in blockchain.chain]
     return jsonify({'chain': chain_data, 'length': len(chain_data)}), 200
 
-# UPDATED to handle timestamp
+# REWRITTEN to correctly create the Transaction object
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
     values = request.get_json()
@@ -33,20 +33,23 @@ def new_transaction():
     if not all(k in values for k in required):
         return jsonify({'message': 'Missing values in transaction data'}), 400
 
+    # Create a proper Transaction object from the received data
     tx_object = Transaction(
         sender=values['sender'],
         recipient=values['recipient'],
         amount=values['amount'],
-        timestamp=values['timestamp'] # Use the timestamp from the request
+        timestamp=values['timestamp']
     )
     tx_object.set_signature(values['signature'])
 
+    # The add_transaction method now performs full validation
     if blockchain.add_transaction(tx_object):
-        return jsonify({'message': 'Transaction is valid and added to pool.'}), 201
+        response = {'message': 'Transaction is valid and has been added to the pending pool.'}
+        return jsonify(response), 201
     else:
-        return jsonify({'message': 'Transaction failed validation.'}), 400
+        response = {'message': 'Transaction failed validation and was rejected.'}
+        return jsonify(response), 400
 
-# UPDATED to handle timestamp
 @app.route('/transactions/sign', methods=['POST'])
 def sign_transaction_request():
     values = request.get_json()
@@ -54,12 +57,22 @@ def sign_transaction_request():
     if not all(k in values for k in required): return jsonify({'message': 'Missing values'}), 400
     try:
         pk_obj = SigningKey.from_string(bytes.fromhex(values['private_key']), curve=NIST384p)
-        # Create transaction with the provided timestamp
         tx = Transaction(values['sender'], values['recipient'], values['amount'], timestamp=values['timestamp'])
         signature = pk_obj.sign(tx.to_json().encode())
         return jsonify({'signature': signature.hex()}), 200
     except Exception as e:
         return jsonify({'message': f"Error during signing: {e}"}), 500
+
+@app.route('/forge', methods=['POST'])
+def forge_block():
+    values = request.get_json()
+    forger_address = values.get('forger_address')
+    if not forger_address: return jsonify({'message': 'Error: Forger address is required.'}), 400
+    new_block = blockchain.forge_transaction_block(forger_address)
+    if new_block:
+        return jsonify({'message': 'Transaction Block Forged!', 'block': vars(new_block)}), 200
+    else:
+        return jsonify({'message': 'Forging failed. No pending transactions.'}), 400
 
 @app.route('/mint', methods=['POST'])
 def mint_coin():
@@ -68,12 +81,14 @@ def mint_coin():
     class SolverWallet: address = values['solver_address']
     new_block = blockchain.attempt_mint(SolverWallet, values['secret_phrase'])
     if new_block:
-        return jsonify({'message': 'New Block Forged!', 'block': vars(new_block)}), 200
+        return jsonify({'message': 'New Artifact Block Forged!', 'block': vars(new_block)}), 200
     return jsonify({'message': 'Minting failed. Invalid solution.'}), 400
 
 @app.route('/address/<address>', methods=['GET'])
 def get_address_info(address): return jsonify(blockchain.get_address_data(address)), 200
 
+# --- Main execution ---
 if __name__ == '__main__':
     parser = ArgumentParser(); parser.add_argument('-p', '--port', default=5000, type=int, help='port to listen on'); args = parser.parse_args()
     app.run(host='0.0.0.0', port=args.port)
+
