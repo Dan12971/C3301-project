@@ -37,37 +37,20 @@ class Wallet:
     def __init__(self): self.private_key = SigningKey.generate(curve=NIST384p); self.public_key = self.private_key.verifying_key; self.address = self.public_key.to_string().hex()
 
 class Transaction:
-    # UPDATED to accept an optional timestamp
-    def __init__(self, sender, recipient, amount, timestamp=None, data=None):
-        self.sender = sender
-        self.recipient = recipient
-        self.amount = amount
-        self.timestamp = timestamp or time.time() # Use provided timestamp, or create a new one
-        self.signature = None
-        self.data = data or {}
-
-    def to_json(self):
-        return json.dumps({"sender": self.sender, "recipient": self.recipient, "amount": self.amount, "timestamp": self.timestamp, "data": self.data}, sort_keys=True)
-
-    def set_signature(self, signature):
-        self.signature = signature
-
+    def __init__(self, sender, recipient, amount, timestamp=None, data=None): self.sender, self.recipient, self.amount, self.timestamp, self.signature, self.data = sender, recipient, amount, timestamp or time.time(), None, data or {}
+    def to_json(self): return json.dumps({"sender": self.sender, "recipient": self.recipient, "amount": self.amount, "timestamp": self.timestamp, "data": self.data}, sort_keys=True)
+    def set_signature(self, signature): self.signature = signature
     @staticmethod
     def is_valid(transaction):
         if transaction.sender in ["MINT_REWARD", "NETWORK_FEES"]: return True
         if not transaction.signature: return False
         try:
-            pk_bytes = bytes.fromhex(transaction.sender)
-            verifying_key = VerifyingKey.from_string(pk_bytes, curve=NIST384p)
-            sig_bytes = bytes.fromhex(transaction.signature)
+            pk_bytes = bytes.fromhex(transaction.sender); verifying_key = VerifyingKey.from_string(pk_bytes, curve=NIST384p); sig_bytes = bytes.fromhex(transaction.signature)
             return verifying_key.verify(sig_bytes, transaction.to_json().encode())
-        except Exception as e:
-            print(f"Transaction validation failed: {e}")
-            return False
+        except Exception as e: print(f"Transaction validation failed: {e}"); return False
 
 class Block:
-    def __init__(self, index, transactions, timestamp, previous_hash, data=None, nonce=0):
-        self.index = index; self.transactions = transactions; self.timestamp = timestamp; self.previous_hash = previous_hash; self.data = data; self.nonce = nonce; self.hash = self.calculate_hash()
+    def __init__(self, index, transactions, timestamp, previous_hash, data=None, nonce=0): self.index, self.transactions, self.timestamp, self.previous_hash, self.data, self.nonce, self.hash = index, transactions, timestamp, previous_hash, data, nonce, self.calculate_hash()
     def calculate_hash(self): return hashlib.sha256((str(self.index) + json.dumps(self.transactions, sort_keys=True) + str(self.timestamp) + str(self.previous_hash) + json.dumps(self.data, sort_keys=True) + str(self.nonce)).encode()).hexdigest()
 
 class Blockchain:
@@ -89,13 +72,49 @@ class Blockchain:
         self.chain = [Block(index=0, transactions=[], timestamp=time.time(), previous_hash="0", data=first_puzzle)]
     @property
     def latest_block(self): return self.chain[-1]
+    
+    # --- NEW HELPER METHOD ---
+    def get_balance(self, address):
+        """Calculates the balance of an address by iterating through all confirmed blocks."""
+        balance = 0.0
+        for block in self.chain:
+            for tx in block.transactions:
+                if tx.get('sender') == address:
+                    balance -= tx.get('amount', 0)
+                    balance -= self.transaction_fee # Also deduct the fee
+                if tx.get('recipient') == address:
+                    balance += tx.get('amount', 0)
+        return balance
+
+    # UPDATED to perform validation, INCLUDING BALANCE CHECK
     def add_transaction(self, transaction):
-        if not Transaction.is_valid(transaction): return False
+        if not Transaction.is_valid(transaction):
+            print("Transaction validation failed: Invalid signature.")
+            return False
+        
+        sender_balance = self.get_balance(transaction.sender)
+        if sender_balance < (transaction.amount + self.transaction_fee):
+            print(f"Transaction validation failed: Insufficient funds for sender {transaction.sender[:10]}...")
+            print(f"  Required: {transaction.amount + self.transaction_fee}, Available: {sender_balance}")
+            return False
+            
         self.pending_transactions.append(transaction)
         return True
+
+    def forge_transaction_block(self, forger_address):
+        if not self.pending_transactions: print("No pending transactions to forge."); return None
+        print(f"Forger {forger_address[:10]}... is forging a new transaction block.")
+        total_fees = len(self.pending_transactions) * self.transaction_fee
+        fee_tx = Transaction(sender="NETWORK_FEES", recipient=forger_address, amount=total_fees)
+        all_transactions = [fee_tx] + self.pending_transactions # Now a list of objects
+        new_block = Block(index=len(self.chain), transactions=[vars(tx) for tx in all_transactions], timestamp=time.time(), previous_hash=self.latest_block.hash, data={"type": "TRANSACTION_BLOCK", "forged_by": forger_address})
+        self.chain.append(new_block); self.pending_transactions = []; self.save_chain_to_disk(); print(f"Success! Transaction Block #{new_block.index} forged."); return new_block
+
     def attempt_mint(self, solver_wallet, proposed_solution):
         # ... (This logic is correct and remains the same)
-        latest_block_data = self.latest_block.data; puzzle_type = latest_block_data.get('puzzle_type'); is_solution_correct = False
+        latest_block_data = self.latest_block.data; puzzle_type = latest_block_data.get('puzzle_type')
+        if latest_block_data.get('type') == 'TRANSACTION_BLOCK': print("Minting Error: Must solve puzzle from the last Artifact Block."); return None
+        is_solution_correct = False
         if puzzle_type == "HashCommitment":
             commitment = latest_block_data.get('solution_hash')
             if commitment and hashlib.sha256(proposed_solution.encode()).hexdigest() == commitment: is_solution_correct = True
@@ -105,17 +124,19 @@ class Blockchain:
                 if hashlib.sha256(f"{prefix}{nonce}".encode()).hexdigest().startswith("0" * zeros): is_solution_correct = True
             except (ValueError, TypeError): return None
         if not is_solution_correct: print("Failed Mint Attempt: Incorrect solution."); return None
-        print("Solution Correct! Forging new block..."); previous_block_hash_as_seed = self.latest_block.hash; next_block_index = len(self.chain)
-        next_puzzle_package = self.puzzle_master.create_new_puzzle(difficulty_level=next_block_index, seed=previous_block_hash_as_seed)
+        print("Solution Correct! Forging new ARTIFACT block...")
+        artifact_block_count = sum(1 for b in self.chain if b.data.get('puzzle_type')); next_difficulty_level = artifact_block_count + 1
+        previous_block_hash_as_seed = self.latest_block.hash; next_puzzle_package = self.puzzle_master.create_new_puzzle(difficulty_level=next_difficulty_level, seed=previous_block_hash_as_seed)
         total_reward = 1 + (len(self.pending_transactions) * self.transaction_fee)
         all_transactions = [Transaction(sender="MINT_REWARD", recipient=solver_wallet.address, amount=total_reward)] + self.pending_transactions
-        new_block = Block(index=next_block_index, transactions=[vars(tx) for tx in all_transactions], timestamp=time.time(), previous_hash=self.latest_block.hash, data=next_puzzle_package)
-        self.chain.append(new_block); self.pending_transactions = []; self.save_chain_to_disk(); print(f"Success! Block #{new_block.index} created."); return new_block
+        new_block = Block(index=len(self.chain), transactions=[vars(tx) for tx in all_transactions], timestamp=time.time(), previous_hash=self.latest_block.hash, data=next_puzzle_package)
+        self.chain.append(new_block); self.pending_transactions = []; self.save_chain_to_disk(); print(f"Success! Artifact Block #{new_block.index} created."); return new_block
+
     def get_address_data(self, address):
         txs, balance = [], 0.0
         for block in self.chain:
             for tx_data in block.transactions:
-                if tx_data.get('recipient') == address: balance += tx_data.get('amount', 0); txs.append(tx_data)
                 if tx_data.get('sender') == address: balance -= tx_data.get('amount', 0); txs.append(tx_data)
+                if tx_data.get('recipient') == address: balance += tx_data.get('amount', 0); txs.append(tx_data)
         return {'address': address, 'balance': balance, 'transactions': txs, 'transaction_count': len(txs)}
-        
+
