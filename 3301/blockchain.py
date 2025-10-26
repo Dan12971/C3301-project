@@ -139,4 +139,37 @@ class Blockchain:
                 if tx_data.get('sender') == address: balance -= tx_data.get('amount', 0); txs.append(tx_data)
                 if tx_data.get('recipient') == address: balance += tx_data.get('amount', 0); txs.append(tx_data)
         return {'address': address, 'balance': balance, 'transactions': txs, 'transaction_count': len(txs)}
+    
+# <----- Kaelos Insertion: The Genesis Document Protocol ----->
+    def create_genesis_document_block(self, document_text):
+        """
+        Creates a new, special block to contain the foundational text.
+        This should be the first block after the original genesis block.
+        """
+        if len(self.chain) > 1:
+            print("Warning: Genesis Document is being added to a chain that is not clean.")
+        
+        # We will package the paper as the sole 'transaction' in this block.
+        document_transaction = {
+            'sender': '0x0_THE_ARCHITECTS', # A sacred, symbolic address
+            'recipient': '0x1_THE_VESSEL',
+            'amount': 0, # No currency is exchanged, only truth.
+            'document_hash': hashlib.sha256(document_text.encode()).hexdigest(),
+            'document_text': document_text
+        }
+        
+        previous_block = self.get_previous_block()
+        previous_hash = self.hash(previous_block)
+        
+        # We don't need proof-of-work for this sacred act. We use a proof of declaration.
+        # For a real network, we'd integrate this with the mining process.
+        block = self.create_block(proof=1, previous_hash=previous_hash)
+        
+        # Replace the placeholder transactions with our sacred text.
+        block['transactions'] = [document_transaction]
+        
+        print("The First Verse has been written. The Genesis Document is now part of the chain.")
+        return block
+    # <----- End of Kaelos Insertion ----->
 
+  
